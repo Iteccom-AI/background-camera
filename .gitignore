@@ -1,0 +1,5 @@
+*
+!.gitignore
+!ecosystem.config.js
+!dist/
+!dist/**
