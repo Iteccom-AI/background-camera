@@ -53724,7 +53724,7 @@ app.post("/stop", async (_req, res) => {
     res.status(500).send("error stopping");
   }
 });
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Config UI running at http://localhost:${PORT}`);
 });
 function buildFfmpegArgs(config) {

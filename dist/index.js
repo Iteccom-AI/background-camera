@@ -141,7 +141,7 @@ app.post("/stop", /*#__PURE__*/function () {
     return _ref2.apply(this, arguments);
   };
 }());
-app.listen(PORT, function () {
+app.listen(PORT, '0.0.0.0', function () {
   console.log("Config UI running at http://localhost:".concat(PORT));
 });
 
