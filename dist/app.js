@@ -53744,6 +53744,7 @@ async function startPipeline(config) {
   return new Promise((resolve, reject) => {
     try {
       socket = io(config.socketUrl, { transports: ["websocket"], auth: config.apiKey ? { apiKey: config.apiKey } : void 0 });
+      console.log(config);
       const args = buildFfmpegArgs(config);
       ffmpeg = spawn("ffmpeg", args);
       ffmpeg.stdout.on("data", (chunk) => {

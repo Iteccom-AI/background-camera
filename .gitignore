@@ -1,5 +1,1 @@
-*
-!.gitignore
-!ecosystem.config.js
-!dist/
-!dist/**
+node_modules
