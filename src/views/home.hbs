@@ -1,0 +1,325 @@
+<style>
+    .header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .form {
+        width: 100%;
+        width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        background-color: #fff;
+    }
+
+    .connection {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .source-type {}
+
+    .source-type-content {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .source-type-content-item {
+        border: 1px solid #ccc;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-center;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 20px 0;
+        position: relative;
+        border-radius: 5px;
+        font-weight: bold;
+    }
+
+    .source-type-content-item:hover {
+        background-color: #f0f0f0;
+    }
+
+    .source-type-content-item.active {
+        background-color: #007bff;
+        color: #fff;
+    }
+
+    .source-type-content-item input {
+        position: absolute;
+        right: 5px;
+        top: 5px;
+        width: fit-content;
+        cursor: pointer;
+    }
+
+    select {
+        padding: 10px;
+        border-radius: 5px;
+    }
+
+    button {
+        cursor: pointer;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        background-color: #fff;
+        color: #000;
+        font-weight: bold;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .action {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .action .start {
+        background-color: #007bff;
+        color: #fff;
+    }
+
+    .action .stop {
+        background-color: #dc3545;
+        color: #fff;
+    }
+
+    .source-config {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    label {
+        font-weight: bold;
+        font-size: 13px;
+    }
+
+</style>
+
+<div class="form">
+    <div class="header">
+        <h2>Cấu hình camera AI</h2>
+        <p>Trạng thái: <span class="{{#if currentConfig}}running{{else}}stopped{{/if}}">{{#if currentConfig}}ĐANG
+                CHẠY{{else}}ĐÃ
+                DỪNG{{/if}}</span></p>
+    </div>
+
+    <form action="/start" method="post" enctype="multipart/form-data">
+        <div class="connection">
+            <h3>Kết nối</h3>
+            <div>
+                <label>Socket URL</label>
+                <input name="socketUrl" type="url" placeholder="http://localhost:3000" required
+                    value="{{#if currentConfig.socketUrl}}{{currentConfig.socketUrl}}{{/if}}" />
+            </div>
+
+            <div>
+                <label>API Key</label>
+                <input name="apiKey" type="text" placeholder="your-api-key"
+                    value="{{#if currentConfig.apiKey}}{{currentConfig.apiKey}}{{/if}}" />
+            </div>
+        </div>
+
+        <div class="source">
+            <div class="source-type">
+                <h3>Nguồn video</h3>
+                <div class="source-type-content">
+                    <label class="source-type-content-item {{#if (eq currentConfig.sourceType 'usb')}}active{{/if}}">
+                        <input type="radio" name="sourceType" value="usb" {{#if (eq currentConfig.sourceType 'usb'
+                            )}}checked{{/if}} />
+                        USB
+                    </label>
+                    <label
+                        class="source-type-content-item {{#if (eq currentConfig.sourceType 'rtsp')}}active{{/if}}"><input
+                            type="radio" name="sourceType" value="rtsp" {{#if (eq currentConfig.sourceType 'rtsp'
+                            )}}checked{{/if}} /> RTSP</label>
+                    <label
+                        class="source-type-content-item {{#if (eq currentConfig.sourceType 'video')}}active{{/if}}"><input
+                            type="radio" name="sourceType" value="video" {{#if (eq currentConfig.sourceType 'video'
+                            )}}checked{{else}}{{#unless currentConfig}}checked{{/unless}}{{/if}} /> Video file</label>
+                    </label>
+                </div>
+            </div>
+
+            <div class="source-config">
+                <div>
+                    <label>Camera ID</label>
+                    <input name="cameraId" type="text" placeholder="cam1"
+                        value="{{#if currentConfig.cameraId}}{{currentConfig.cameraId}}{{else}}cam1{{/if}}" required />
+                </div>
+
+                <div class="usb-input type-input">
+                    <label>USB source (Linux v4l2 ví dụ: /dev/video0, Windows dshow ví dụ: video=USB Camera)</label>
+                    <input name="usbSource" type="text" placeholder="/dev/video0"
+                        value="{{#if currentConfig.usbSource}}{{currentConfig.usbSource}}{{/if}}" />
+                    <select id="usbDeviceSelect" style="display:none;"></select>
+                </div>
+
+                <div class="rtsp-input type-input">
+                    <label>RTSP URL</label>
+                    <input name="rtspUrl" type="url" placeholder="rtsp://user:pass@ip:554/Streaming/Channels/101"
+                        value="{{#if currentConfig.rtspUrl}}{{currentConfig.rtspUrl}}{{/if}}" />
+
+                </div>
+                <div class="video-input type-input">
+                    <label>Video file (nếu chọn Video)</label>
+                    <input name="videoFile" type="file" accept="video/*" />
+                </div>
+
+                {{!-- <div class="hint">File hiện tại: {{#if currentConfig.videoPath}}{{currentConfig.videoPath}}{{else}}chưa
+                    có{{/if}}</div> --}}
+
+                <div>
+                    <label>FPS mong muốn</label>
+                    <input name="fps" type="text" placeholder="1"
+                        value="{{#if currentConfig.fps}}{{currentConfig.fps}}{{else}}1{{/if}}" />
+                </div>
+            </div>
+        </div>
+
+        <div class="action">
+            <button type="submit" class="start">Start/Restart</button>
+            <button type="button" class="stop" onclick="stopPipeline()">Stop</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    const sourceTypeRadios = document.querySelectorAll('input[name="sourceType"]');
+
+    function stopPipeline() {
+        fetch("/stop", {
+            method: "POST"
+        });
+    }
+
+    function handleSourceTypeChange() {
+        const selected = document.querySelector('input[name="sourceType"]:checked');
+        if (selected) {
+            console.log(selected.value);
+
+            // Remove active class from all source type items
+            const allItems = document.querySelectorAll('.source-type-content-item');
+            allItems.forEach(item => item.classList.remove('active'));
+            
+            // Add active class to the selected item's parent label
+            const selectedLabel = selected.closest('.source-type-content-item');
+            if (selectedLabel) {
+                selectedLabel.classList.add('active');
+            }
+
+            showOptions(selected.value);
+
+            if (selected.value === 'usb') {
+                populateUsbDevices();
+            }
+
+        }
+    }
+
+    function showOptions(sourceType) {
+        document.querySelectorAll('.type-input').forEach(item => item.style.display = 'none');
+        document.querySelector(`.${sourceType}-input`).style.display = 'block';
+        document.querySelector(`.${sourceType}-input input`).focus();
+    }
+
+    showOptions('video');
+
+    sourceTypeRadios.forEach((radio) => {
+        radio.addEventListener('change', handleSourceTypeChange);
+    });
+
+    async function populateUsbDevices() {
+        const hiddenInput = document.querySelector('input[name="usbSource"]');
+        const selectEl = document.getElementById('usbDeviceSelect');
+        if (!hiddenInput || !selectEl) return;
+
+        const isWindows = navigator.userAgent && navigator.userAgent.indexOf('Windows') !== -1;
+
+        // For non-Windows keep text input; for Windows show select
+        if (!isWindows) {
+            selectEl.style.display = 'none';
+            hiddenInput.type = 'text';
+            if (!hiddenInput.value) hiddenInput.value = '/dev/video0';
+            return;
+        }
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoInputs = devices.filter(d => d.kind === 'videoinput');
+
+                // Prepare select
+                selectEl.innerHTML = '';
+                videoInputs.forEach((d, idx) => {
+                    const opt = document.createElement('option');
+                    const label = d.label && d.label.trim().length > 0 ? d.label : `Camera ${idx + 1}`;
+                    opt.value = label;
+                    opt.textContent = label;
+                    selectEl.appendChild(opt);
+                });
+
+                // Determine initial selection
+                const current = (hiddenInput.value || '').toLowerCase();
+                const findMatch = Array.from(selectEl.options).find(o => {
+                    const normalized = `video=${o.value}`.toLowerCase();
+                    return current === normalized || current === o.value.toLowerCase();
+                });
+                if (findMatch) {
+                    selectEl.value = findMatch.value;
+                } else if (selectEl.options.length > 0) {
+                    selectEl.selectedIndex = 0;
+                }
+
+                // Reflect into hidden input
+                if (selectEl.value) {
+                    hiddenInput.value = `video=${selectEl.value}`;
+                } else if (!hiddenInput.value) {
+                    hiddenInput.value = 'video=USB Camera';
+                }
+
+                // Show select, hide visible text input field
+                selectEl.style.display = 'block';
+                hiddenInput.type = 'hidden';
+
+                // Change handler
+                selectEl.onchange = () => {
+                    hiddenInput.value = `video=${selectEl.value}`;
+                };
+            } finally {
+                stream.getTracks().forEach(t => t.stop());
+            }
+        } catch (err) {
+            console.warn('Unable to list cameras, falling back to text input.', err);
+            selectEl.style.display = 'none';
+            hiddenInput.type = 'text';
+            if (!hiddenInput.value) hiddenInput.value = 'video=USB Camera';
+        }
+    }
+</script>
